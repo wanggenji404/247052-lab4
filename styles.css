@@ -129,7 +129,7 @@ nav.tabs a[aria-current="page"] {
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
 }
 
 .card {
@@ -188,17 +188,18 @@ nav.tabs a[aria-current="page"] {
 
 .profile .field .k {
   flex: none;
-  width: 7.2rem;
+  width: 6.5rem;
   color: var(--muted);
 }
 
 .profile .field .v {
   word-break: break-word;
+  min-width: 0;
 }
 
 .profile .field .v.mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: .86rem;
+  font-size: .8rem;
 }
 
 .pill {
