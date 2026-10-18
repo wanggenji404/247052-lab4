@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Profiles (JSON Lab) &middot; Lab 4</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="site">
+      <h1>User Profiles</h1>
+      <p class="sub">
+        Task 2 &mdash; JSON Lab. The data is read from
+        <code class="inline">userProfiles.json</code> with
+        <code class="inline">fetch()</code> and rendered below, both as cards and as a table.
+      </p>
+      <nav class="tabs">
+        <a href="index.html">XML &mdash; Books</a>
+        <a href="users.html" aria-current="page">JSON &mdash; User Profiles</a>
+      </nav>
+    </header>
+
+    <p class="status" id="status"><span class="dot" id="status-dot"></span><span id="status-text">Loading userProfiles.json&hellip;</span></p>
+
+    <div id="error-slot"></div>
+    <div class="summary" id="summary" hidden></div>
+
+    <!-- Profiles are inserted here -->
+    <main class="grid" id="profile-list" aria-live="polite"></main>
+
+    <!-- The same data as a table, so every field is visible at a glance -->
+    <section id="table-section" hidden>
+      <h3 class="section">All profiles in a table</h3>
+      <div class="table-scroll">
+        <table class="profiles" id="profile-table">
+          <thead>
+            <tr>
+              <th>First name</th>
+              <th>Last name</th>
+              <th>Email</th>
+              <th>Date of birth</th>
+              <th>City</th>
+              <th>State</th>
+              <th>Zip</th>
+              <th>Theme</th>
+              <th>Language</th>
+              <th>Notifications</th>
+              <th>Subscription</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="site">
+      <p>
+        159.251 Web Development &middot; Lab 4 &middot; JSON Lab.
+        Source data: <code class="inline">userProfiles.json</code>.
+      </p>
+    </footer>
+
+  </div>
+
+<script>
+/* ------------------------------------------------------------------
+   Task 2 (JSON Lab)
+   Fetch userProfiles.json, check the response, parse it as JSON, then
+   render each profile as a card plus a summary table.
+
+   The response.ok / throw pattern is the one shown in the lab notes.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  const statusDot   = document.getElementById('status-dot');
+  const statusText  = document.getElementById('status-text');
+  const errorSlot   = document.getElementById('error-slot');
+  const summary     = document.getElementById('summary');
+  const profileList = document.getElementById('profile-list');
+  const tableSection = document.getElementById('table-section');
+  const tableBody   = document.querySelector('#profile-table tbody');
+
+  function setStatus(kind, message) {
+    statusDot.className = 'dot' + (kind ? ' ' + kind : '');
+    statusText.textContent = message;
+  }
+
+  function showError(title, detail) {
+    const box = document.createElement('div');
+    box.className = 'error-box';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    box.appendChild(strong);
+    box.appendChild(document.createTextNode(detail));
+    errorSlot.appendChild(box);
+    setStatus('err', 'Failed to load the profiles');
+  }
+
+  /**
+   * Creates one "Key: value" row inside a card.
+   * @param {string} key
+   * @param {string|Node} value either text or a ready-made element
+   * @param {boolean} [mono] use the monospace style for the value
+   */
+  function field(key, value, mono) {
+    const row = document.createElement('div');
+    row.className = 'field';
+    const k = document.createElement('span');
+    k.className = 'k';
+    k.textContent = key;
+    const v = document.createElement('span');
+    v.className = 'v' + (mono ? ' mono' : '');
+    if (typeof value === 'string') { v.textContent = value; }
+    else { v.appendChild(value); }
+    row.appendChild(k);
+    row.appendChild(v);
+    return row;
+  }
+
+  /** Small coloured on/off pill. */
+  function pill(on, onText, offText) {
+    const span = document.createElement('span');
+    span.className = 'pill ' + (on ? 'on' : 'off');
+    span.textContent = on ? onText : offText;
+    return span;
+  }
+
+  /** Formats 1994-03-17 as "17 March 1994". */
+  function formatDate(iso) {
+    if (!iso) { return '(not provided)'; }
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d.getTime())) { return iso; }
+    return d.toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function text(value, fallback) {
+    return (value === undefined || value === null || value === '') ? (fallback || '(not provided)') : String(value);
+  }
+
+  /**
+   * Builds the card for one user profile.
+   * @param {object} profile
+   * @returns {HTMLElement}
+   */
+  function renderProfile(profile) {
+    const card = document.createElement('article');
+    card.className = 'card profile';
+
+    const h2 = document.createElement('h2');
+    h2.textContent = text(profile.firstName, '') + ' ' + text(profile.lastName, '');
+    card.appendChild(h2);
+
+    // ---- basic details ----
+    const hBasic = document.createElement('h3');
+    hBasic.className = 'section';
+    hBasic.textContent = 'Details';
+    card.appendChild(hBasic);
+
+    card.appendChild(field('First name', text(profile.firstName)));
+    card.appendChild(field('Last name', text(profile.lastName)));
+    card.appendChild(field('Email', text(profile.email), true));
+    card.appendChild(field('Date of birth', formatDate(profile.dateOfBirth)));
+
+    // ---- address (added in the "extend the JSON" step) ----
+    const hAddr = document.createElement('h3');
+    hAddr.className = 'section';
+    hAddr.textContent = 'Address';
+    card.appendChild(hAddr);
+
+    const a = profile.address || {};
+    card.appendChild(field('Street', text(a.street)));
+    card.appendChild(field('City', text(a.city)));
+    card.appendChild(field('State', text(a.state)));
+    card.appendChild(field('Zip code', text(a.zipCode), true));
+
+    // ---- preferences (subscription lives in here) ----
+    const hPref = document.createElement('h3');
+    hPref.className = 'section';
+    hPref.textContent = 'Preferences';
+    card.appendChild(hPref);
+
+    const p = profile.preferences || {};
+    card.appendChild(field('Theme', text(p.theme)));
+    card.appendChild(field('Language', text(p.language)));
+    card.appendChild(field('Notifications', pill(p.notifications === true, 'on', 'off')));
+    card.appendChild(field('Newsletter', pill(p.subscription === true, 'subscribed', 'not subscribed')));
+
+    return card;
+  }
+
+  /** Fills the summary table with one row per profile. */
+  function renderTable(profiles) {
+    tableBody.textContent = '';
+    profiles.forEach(function (profile) {
+      const a = profile.address || {};
+      const p = profile.preferences || {};
+      const tr = document.createElement('tr');
+      [
+        text(profile.firstName, ''),
+        text(profile.lastName, ''),
+        text(profile.email, ''),
+        text(profile.dateOfBirth, ''),
+        text(a.city, ''),
+        text(a.state, ''),
+        text(a.zipCode, ''),
+        text(p.theme, ''),
+        text(p.language, ''),
+        p.notifications === true ? 'on' : 'off',
+        p.subscription === true ? 'subscribed' : 'not subscribed'
+      ].forEach(function (value) {
+        const td = document.createElement('td');
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+      tableBody.appendChild(tr);
+    });
+    tableSection.hidden = false;
+  }
+
+  /** Renders the whole document. */
+  function renderProfiles(json) {
+    // The file may hold either a bare array or an object with a userProfiles key.
+    const profiles = Array.isArray(json)
+      ? json
+      : (Array.isArray(json.userProfiles) ? json.userProfiles : []);
+
+    if (profiles.length === 0) {
+      throw new Error('No user profiles found. Expected a "userProfiles" array.');
+    }
+
+    profileList.textContent = '';
+    const frag = document.createDocumentFragment();
+    profiles.forEach(function (profile) { frag.appendChild(renderProfile(profile)); });
+    profileList.appendChild(frag);
+
+    renderTable(profiles);
+
+    // summary strip
+    const subscribed = profiles.filter(function (x) {
+      return x.preferences && x.preferences.subscription === true;
+    }).length;
+    const withNotify = profiles.filter(function (x) {
+      return x.preferences && x.preferences.notifications === true;
+    }).length;
+
+    summary.textContent = '';
+    [
+      ['Profiles', String(profiles.length)],
+      ['Subscribed to newsletter', String(subscribed)],
+      ['Notifications enabled', String(withNotify)]
+    ].forEach(function (pair) {
+      const span = document.createElement('span');
+      const b = document.createElement('b');
+      b.textContent = pair[1];
+      span.appendChild(document.createTextNode(pair[0] + ': '));
+      span.appendChild(b);
+      summary.appendChild(span);
+    });
+    summary.hidden = false;
+
+    setStatus('ok', 'Loaded ' + profiles.length + ' user profiles from userProfiles.json');
+  }
+
+  // ---- fetch -> parse -> render ---------------------------------
+  fetch('userProfiles.json')
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Fetch error: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(function (json) {
+      renderProfiles(json);
+    })
+    .catch(function (err) {
+      console.error('Fetch error: ' + err.message);
+      showError('Could not display the user profiles.', err.message);
+    });
+})();
+</script>
+</body>
+</html>

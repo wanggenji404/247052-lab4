@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  book.xml - a simple book catalogue
+  159.251 / Web Development Lab 4, Task 1 (XML Lab)
+
+  Structure:
+    bookCatalogue
+      book  @id            unique identifier for the book
+        title              the book's title
+        author             the book's author
+        price              the price in New Zealand dollars
+-->
+<bookCatalogue>
+
+  <book id="B001">
+    <title>The Pragmatic Programmer</title>
+    <author>Andrew Hunt and David Thomas</author>
+    <price>79.99</price>
+  </book>
+
+  <book id="B002">
+    <title>Clean Code</title>
+    <author>Robert C. Martin</author>
+    <price>65.50</price>
+  </book>
+
+  <book id="B003">
+    <title>Design Patterns: Elements of Reusable Object-Oriented Software</title>
+    <author>Erich Gamma, Richard Helm, Ralph Johnson and John Vlissides</author>
+    <price>89.00</price>
+  </book>
+
+  <book id="B004">
+    <title>Refactoring: Improving the Design of Existing Code</title>
+    <author>Martin Fowler</author>
+    <price>72.25</price>
+  </book>
+
+  <book id="B005">
+    <title>JavaScript: The Definitive Guide</title>
+    <author>David Flanagan</author>
+    <price>59.95</price>
+  </book>
+
+  <book id="B006">
+    <title>Learning XML</title>
+    <author>Erik T. Ray</author>
+    <price>45.00</price>
+  </book>
+
+</bookCatalogue>

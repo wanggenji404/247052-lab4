@@ -1,0 +1,76 @@
+{
+  "userProfiles": [
+    {
+      "firstName": "Aroha",
+      "lastName": "Ngata",
+      "email": "aroha.ngata@example.com",
+      "dateOfBirth": "1994-03-17",
+      "address": {
+        "street": "12 Fitzherbert Avenue",
+        "city": "Palmerston North",
+        "state": "Manawatu-Whanganui",
+        "zipCode": "4410"
+      },
+      "preferences": {
+        "theme": "dark",
+        "language": "en-NZ",
+        "notifications": true,
+        "subscription": true
+      }
+    },
+    {
+      "firstName": "Liam",
+      "lastName": "O'Connor",
+      "email": "liam.oconnor@example.com",
+      "dateOfBirth": "1988-11-02",
+      "address": {
+        "street": "48 Cuba Street",
+        "city": "Wellington",
+        "state": "Wellington",
+        "zipCode": "6011"
+      },
+      "preferences": {
+        "theme": "light",
+        "language": "en-NZ",
+        "notifications": false,
+        "subscription": false
+      }
+    },
+    {
+      "firstName": "Mei",
+      "lastName": "Chen",
+      "email": "mei.chen@example.com",
+      "dateOfBirth": "2001-07-24",
+      "address": {
+        "street": "7 Queen Street",
+        "city": "Auckland",
+        "state": "Auckland",
+        "zipCode": "1010"
+      },
+      "preferences": {
+        "theme": "system",
+        "language": "zh-CN",
+        "notifications": true,
+        "subscription": true
+      }
+    },
+    {
+      "firstName": "Tomas",
+      "lastName": "Berg",
+      "email": "tomas.berg@example.com",
+      "dateOfBirth": "1979-01-08",
+      "address": {
+        "street": "3 Riccarton Road",
+        "city": "Christchurch",
+        "state": "Canterbury",
+        "zipCode": "8041"
+      },
+      "preferences": {
+        "theme": "dark",
+        "language": "en-NZ",
+        "notifications": true,
+        "subscription": false
+      }
+    }
+  ]
+}

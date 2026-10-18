@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book Catalogue (XML Lab) &middot; Lab 4</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="site">
+      <h1>Book Catalogue</h1>
+      <p class="sub">
+        Task 1 &mdash; XML Lab. The data is read from
+        <code class="inline">book.xml</code> with <code class="inline">fetch()</code>,
+        parsed with <code class="inline">DOMParser</code> and rendered below.
+      </p>
+      <nav class="tabs">
+        <a href="index.html" aria-current="page">XML &mdash; Books</a>
+        <a href="users.html">JSON &mdash; User Profiles</a>
+      </nav>
+    </header>
+
+    <p class="status" id="status"><span class="dot" id="status-dot"></span><span id="status-text">Loading book.xml&hellip;</span></p>
+
+    <div id="error-slot"></div>
+    <div class="summary" id="summary" hidden></div>
+
+    <!-- Books are inserted here -->
+    <main class="grid" id="book-list" aria-live="polite"></main>
+
+    <footer class="site">
+      <p>
+        159.251 Web Development &middot; Lab 4 &middot; XML Lab.
+        Source data: <code class="inline">book.xml</code>.
+      </p>
+    </footer>
+
+  </div>
+
+<script>
+/* ------------------------------------------------------------------
+   Task 1 (XML Lab)
+   Fetch book.xml, check the response, parse it with DOMParser, then
+   render one card per <book> element.
+
+   The response.ok / throw pattern is the one shown in the lab notes.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  const statusDot  = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const errorSlot  = document.getElementById('error-slot');
+  const summary    = document.getElementById('summary');
+  const bookList   = document.getElementById('book-list');
+
+  /** Updates the little status line at the top of the page. */
+  function setStatus(kind, message) {
+    statusDot.className = 'dot' + (kind ? ' ' + kind : '');
+    statusText.textContent = message;
+  }
+
+  /** Shows a readable error instead of leaving the page blank. */
+  function showError(title, detail) {
+    const box = document.createElement('div');
+    box.className = 'error-box';
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    box.appendChild(strong);
+    box.appendChild(document.createTextNode(detail));
+    errorSlot.appendChild(box);
+    setStatus('err', 'Failed to load the catalogue');
+  }
+
+  /**
+   * Builds the card for one <book> element.
+   * @param {Element} book a <book> element from the parsed XML document
+   * @returns {HTMLElement}
+   */
+  function renderBook(book) {
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    // id attribute -> badge
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = book.getAttribute('id') || 'no id';
+    card.appendChild(badge);
+
+    // child elements, read by tag name
+    const title  = book.getElementsByTagName('title')[0];
+    const author = book.getElementsByTagName('author')[0];
+    const price  = book.getElementsByTagName('price')[0];
+
+    const h2 = document.createElement('h2');
+    h2.textContent = title ? title.textContent.trim() : '(untitled)';
+    card.appendChild(h2);
+
+    const pAuthor = document.createElement('p');
+    pAuthor.className = 'author';
+    pAuthor.textContent = author ? author.textContent.trim() : '(unknown author)';
+    card.appendChild(pAuthor);
+
+    const pPrice = document.createElement('p');
+    pPrice.className = 'price';
+    const amount = price ? Number(price.textContent.trim()) : NaN;
+    pPrice.textContent = isNaN(amount)
+      ? (price ? price.textContent.trim() : '(no price)')
+      : '$' + amount.toFixed(2);
+    card.appendChild(pPrice);
+
+    return card;
+  }
+
+  /** Renders the whole catalogue. */
+  function renderCatalogue(xmlDoc) {
+    const books = xmlDoc.getElementsByTagName('book');
+
+    bookList.textContent = '';
+    const frag = document.createDocumentFragment();
+    let total = 0;
+
+    for (let i = 0; i < books.length; i++) {
+      frag.appendChild(renderBook(books[i]));
+      const price = books[i].getElementsByTagName('price')[0];
+      if (price) {
+        const n = Number(price.textContent.trim());
+        if (!isNaN(n)) { total += n; }
+      }
+    }
+    bookList.appendChild(frag);
+
+    // summary strip
+    summary.textContent = '';
+    const parts = [
+      ['Books', String(books.length)],
+      ['Catalogue value', '$' + total.toFixed(2)],
+      ['Average price', books.length ? '$' + (total / books.length).toFixed(2) : '$0.00']
+    ];
+    parts.forEach(function (pair) {
+      const span = document.createElement('span');
+      const b = document.createElement('b');
+      b.textContent = pair[1];
+      span.appendChild(document.createTextNode(pair[0] + ': '));
+      span.appendChild(b);
+      summary.appendChild(span);
+    });
+    summary.hidden = false;
+
+    setStatus('ok', 'Loaded ' + books.length + ' books from book.xml');
+  }
+
+  // ---- fetch -> parse -> render ---------------------------------
+  fetch('book.xml')
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('Fetch error: ' + response.status);
+      }
+      return response.text();
+    })
+    .then(function (xmlText) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+      // DOMParser does not throw on bad XML; it returns a <parsererror> document.
+      const parseError = xmlDoc.getElementsByTagName('parsererror')[0];
+      if (parseError) {
+        throw new Error('XML is not well-formed: ' + parseError.textContent.trim());
+      }
+
+      renderCatalogue(xmlDoc);
+    })
+    .catch(function (err) {
+      console.error('Fetch error: ' + err.message);
+      showError('Could not display the book catalogue.', err.message);
+    });
+})();
+</script>
+</body>
+</html>
